@@ -1,0 +1,264 @@
+:
+: Serial Number: JAD26250E0M
+: Hardware:   FPR-2110, 6588 MB RAM, CPU MIPS 1200 MHz, 1 CPU (6 cores)
+:
+NGFW Version 7.0.4
+!
+hostname firepower
+enable password ***** encrypted
+strong-encryption-disable
+service-module 0 keepalive-timeout 4
+service-module 0 keepalive-counter 6
+names
+no mac-address auto
+
+
+
+!
+interface Ethernet1/1
+ no nameif
+ no security-level
+ no ip address
+ ipv6 address autoconfig
+ ipv6 enable
+!
+interface Ethernet1/2
+ nameif notinuse
+ cts manual
+  propagate sgt preserve-untag
+  policy static sgt disabled trusted
+ security-level 0
+ ip address 192.168.95.1 255.255.255.0
+!
+interface Ethernet1/3
+ nameif outside
+ cts manual
+  propagate sgt preserve-untag
+  policy static sgt disabled trusted
+ security-level 0
+ ip address 192.168.2.1 255.255.255.0 standby 192.168.2.2
+!
+interface Ethernet1/4
+ description LAN/STATE Failover Interface
+!
+interface Ethernet1/5
+ nameif inside
+ cts manual
+  propagate sgt preserve-untag
+  policy static sgt disabled trusted
+ security-level 0
+ ip address 192.168.3.1 255.255.255.0 standby 192.168.3.2
+!
+interface Ethernet1/6
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/7
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/8
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/9
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/10
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/11
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/12
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/13
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/14
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/15
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Ethernet1/16
+ shutdown
+ no nameif
+ no security-level
+ no ip address
+!
+interface Management1/1
+ management-only
+ nameif diagnostic
+ cts manual
+  propagate sgt preserve-untag
+  policy static sgt disabled trusted
+ security-level 0
+ no ip address
+!
+ftp mode passive
+ngips conn-match vlan-id
+dns domain-lookup any
+dns server-group CiscoUmbrellaDNSServerGroup
+ name-server 208.67.222.222
+ name-server 208.67.220.220
+ name-server 2620:119:35::35
+dns-group CiscoUmbrellaDNSServerGroup
+object network any-ipv4
+ subnet 0.0.0.0 0.0.0.0
+object network any-ipv6
+ subnet ::/0
+object network IPv4-Private-10.0.0.0-8
+ subnet 10.0.0.0 255.0.0.0
+object network IPv4-Private-172.16.0.0-12
+ subnet 172.16.0.0 255.240.0.0
+object network IPv4-Private-192.168.0.0-16
+ subnet 192.168.0.0 255.255.0.0
+object network FULL-CONNECTION
+ host 192.168.2.100
+object-group network IPv4-Private-All-RFC1918
+ network-object object IPv4-Private-10.0.0.0-8
+ network-object object IPv4-Private-172.16.0.0-12
+ network-object object IPv4-Private-192.168.0.0-16
+object-group service |acSvcg-268435457
+ service-object ip
+access-list NGFW_ONBOX_ACL remark rule-id 268435457: ACCESS POLICY: NGFW_Access_Policy
+access-list NGFW_ONBOX_ACL remark rule-id 268435457: L5 RULE: ALLOW-ALL
+access-list NGFW_ONBOX_ACL advanced permit object-group |acSvcg-268435457 any any rule-id 268435457
+access-list NGFW_ONBOX_ACL remark rule-id 1: ACCESS POLICY: NGFW_Access_Policy
+access-list NGFW_ONBOX_ACL remark rule-id 1: L5 RULE: DefaultActionRule
+access-list NGFW_ONBOX_ACL advanced deny ip any any rule-id 1
+pager lines 24
+logging enable
+logging timestamp
+logging permit-hostdown
+mtu notinuse 1500
+mtu outside 1500
+mtu inside 1500
+mtu diagnostic 1500
+failover
+failover lan unit secondary
+failover lan interface failover-link Ethernet1/4
+failover replication http
+failover link failover-link Ethernet1/4
+failover interface ip failover-link 192.168.100.1 255.255.255.0 standby 192.168.100.2
+icmp unreachable rate-limit 1 burst-size 1
+no asdm history enable
+arp timeout 14400
+no arp permit-nonconnected
+arp rate-limit 32768
+access-group NGFW_ONBOX_ACL global
+route outside 0.0.0.0 0.0.0.0 192.168.2.100 1
+timeout xlate 3:00:00
+timeout pat-xlate 0:00:30
+timeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 sctp 0:02:00 icmp 0:00:02
+timeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00
+timeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00
+timeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute
+timeout tcp-proxy-reassembly 0:01:00
+timeout floating-conn 0:00:00
+timeout conn-holddown 0:00:15
+timeout igp stale-route 0:01:10
+user-identity default-domain LOCAL
+aaa authentication login-history
+http server enable
+http 0.0.0.0 0.0.0.0 notinuse
+http ::/0 notinuse
+ip-client diagnostic
+ip-client diagnostic ipv6
+ip-client notinuse
+ip-client notinuse ipv6
+ip-client outside
+ip-client outside ipv6
+ip-client inside
+ip-client inside ipv6
+snmp-server group AUTH v3 auth
+snmp-server group PRIV v3 priv
+snmp-server group NOAUTH v3 noauth
+snmp-server location null
+snmp-server contact null
+snmp-server community *****
+sysopt connection tcpmss 0
+no sysopt connection permit-vpn
+crypto ipsec security-association pmtu-aging infinite
+crypto ca permit-weak-crypto
+crypto ca trustpool policy
+telnet timeout 5
+console timeout 0
+dhcprelay timeout 60
+threat-detection basic-threat
+threat-detection statistics access-list
+no threat-detection statistics tcp-intercept
+group-policy DfltGrpPolicy attributes
+ vpn-tunnel-protocol ssl-client
+ webvpn
+  anyconnect ssl dtls none
+dynamic-access-policy-record DfltAccessPolicy
+!
+class-map inspection_default
+ match default-inspection-traffic
+class-map class_snmp
+ match port udp eq 4161
+!
+!
+policy-map type inspect dns preset_dns_map
+ parameters
+  message-length maximum client auto
+  message-length maximum 512
+  no tcp-inspection
+policy-map global_policy
+ class inspection_default
+  inspect dns preset_dns_map
+  inspect ftp
+  inspect h323 h225
+  inspect h323 ras
+  inspect rsh
+  inspect rtsp
+  inspect sqlnet
+  inspect skinny
+  inspect sunrpc
+  inspect sip
+  inspect netbios
+  inspect tftp
+  inspect ip-options
+  inspect icmp
+  inspect icmp error
+  inspect xdmcp
+ class class_snmp
+  inspect snmp
+!
+service-policy global_policy global
+prompt hostname context
+snort preserve-connection
+no dp-tcp-proxy
+Cryptochecksum:340388449fece81d95f0ec93b230cf59
+: end
+>
